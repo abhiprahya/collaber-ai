@@ -8,12 +8,38 @@ import MainNav from "./MainNav";
 import PersonaDiscovery from "./PersonaDiscovery";
 import CollaborationInvite from "./CollaborationInvite";
 import MultimodalContent from "./MultimodalContent";
+import { useToast } from "@/hooks/use-toast";
 
 const Header = () => {
   const isMobile = useIsMobile();
+  const { toast } = useToast();
   const [isDiscoveryOpen, setIsDiscoveryOpen] = useState(false);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [isMultimodalOpen, setIsMultimodalOpen] = useState(false);
+  
+  // Get selected persona from localStorage or state management
+  const getSelectedPersona = () => {
+    try {
+      const storedPersona = localStorage.getItem('selectedPersona');
+      return storedPersona ? JSON.parse(storedPersona) : null;
+    } catch (error) {
+      console.error("Error retrieving selected persona:", error);
+      return null;
+    }
+  };
+  
+  const selectedPersona = getSelectedPersona();
+  
+  const handleAddContent = () => {
+    if (!selectedPersona) {
+      toast({
+        title: "No Persona Selected",
+        description: "Please select a persona first before adding content.",
+        variant: "warning",
+      });
+    }
+    setIsMultimodalOpen(true);
+  };
   
   return (
     <>
@@ -27,7 +53,7 @@ const Header = () => {
           </div>
           
           <div className="flex gap-2 items-center">
-            <Button variant="outline" onClick={() => setIsMultimodalOpen(true)}>
+            <Button variant="outline" onClick={handleAddContent}>
               Add Content
             </Button>
             
@@ -75,7 +101,9 @@ const Header = () => {
       
       <MultimodalContent 
         isOpen={isMultimodalOpen} 
-        onClose={() => setIsMultimodalOpen(false)} 
+        onClose={() => setIsMultimodalOpen(false)}
+        personaId={selectedPersona?.id}
+        personaName={selectedPersona?.name}
       />
     </>
   );

@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import PersonaCard, { PersonaProps } from "@/components/PersonaCard";
 import ContentInput from "@/components/ContentInput";
 import ResponseSimulator from "@/components/ResponseSimulator";
 import ABTestComparison from "@/components/ABTestComparison";
+import { useToast } from "@/hooks/use-toast";
 
 // Mock personas data
 const MOCK_PERSONAS: PersonaProps[] = [
@@ -74,6 +75,7 @@ const MOCK_PERSONAS: PersonaProps[] = [
 ];
 
 const Index = () => {
+  const { toast } = useToast();
   const [selectedPersonaId, setSelectedPersonaId] = useState<string | null>(null);
   const [content, setContent] = useState("");
   const [platform, setPlatform] = useState("");
@@ -81,11 +83,52 @@ const Index = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showABTest, setShowABTest] = useState(false);
   
+  // Load selected persona from localStorage on component mount
+  useEffect(() => {
+    try {
+      const storedPersona = localStorage.getItem('selectedPersona');
+      if (storedPersona) {
+        const parsedPersona = JSON.parse(storedPersona);
+        setSelectedPersonaId(parsedPersona.id);
+      }
+    } catch (error) {
+      console.error("Error loading selected persona from localStorage:", error);
+    }
+  }, []);
+  
   const handlePersonaSelect = (id: string) => {
     setSelectedPersonaId(id);
+    
+    // Find selected persona and save to localStorage
+    const persona = MOCK_PERSONAS.find(p => p.id === id);
+    if (persona) {
+      try {
+        localStorage.setItem('selectedPersona', JSON.stringify({
+          id: persona.id,
+          name: persona.name,
+          avatar: persona.avatar
+        }));
+        
+        toast({
+          title: "Persona Selected",
+          description: `${persona.name} has been selected for content previews.`,
+        });
+      } catch (error) {
+        console.error("Error saving persona to localStorage:", error);
+      }
+    }
   };
   
   const handleAnalyze = (newContent: string, newPlatform: string, title?: string) => {
+    if (!selectedPersonaId) {
+      toast({
+        title: "No Persona Selected",
+        description: "Please select a persona first before analyzing content.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setContent(newContent);
     setPlatform(newPlatform);
     setContentTitle(title || "");
@@ -100,6 +143,13 @@ const Index = () => {
   };
   
   const selectedPersona = MOCK_PERSONAS.find(p => p.id === selectedPersonaId);
+  
+  // Update onSelect for all personas
+  const personasWithHandlers = MOCK_PERSONAS.map(persona => ({
+    ...persona,
+    selected: persona.id === selectedPersonaId,
+    onSelect: () => handlePersonaSelect(persona.id)
+  }));
   
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -122,12 +172,12 @@ const Index = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {MOCK_PERSONAS.map((persona) => (
+            {personasWithHandlers.map((persona) => (
               <PersonaCard
                 key={persona.id}
                 {...persona}
                 selected={persona.id === selectedPersonaId}
-                onSelect={handlePersonaSelect}
+                onSelect={() => handlePersonaSelect(persona.id)}
               />
             ))}
           </div>
