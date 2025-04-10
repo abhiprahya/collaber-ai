@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { BrainCircuit, Menu } from "lucide-react";
+import { Link, Share2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -35,7 +35,7 @@ const Header = () => {
       toast({
         title: "No Persona Selected",
         description: "Please select a persona first before adding content.",
-        variant: "destructive", // Changed from "warning" to "destructive"
+        variant: "destructive",
       });
     }
     setIsMultimodalOpen(true);
@@ -46,9 +46,9 @@ const Header = () => {
       <header className="sticky top-0 z-30 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between py-4">
           <div className="flex items-center gap-2">
-            <BrainCircuit className="h-8 w-8 text-suprbrain-primary" />
+            <Link className="h-8 w-8 text-suprbrain-primary" />
             <span className="text-xl font-bold">
-              <span className="gradient-text">SuprBrain</span>
+              <span className="gradient-text">Collaber.ai</span>
             </span>
           </div>
           

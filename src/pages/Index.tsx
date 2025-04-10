@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { BrainCircuit, Users, Sparkles, PlaySquare } from "lucide-react";
+import { Link, Users, Sparkles, PlaySquare } from "lucide-react";
 import PersonaCard, { PersonaProps } from "@/components/PersonaCard";
 import ContentInput from "@/components/ContentInput";
 import ResponseSimulator from "@/components/ResponseSimulator";
@@ -167,7 +167,7 @@ const Index = () => {
         
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-4">
-            <BrainCircuit className="h-5 w-5 text-suprbrain-primary" />
+            <Link className="h-5 w-5 text-suprbrain-primary" />
             <h2 className="text-xl font-semibold">Select Audience Persona</h2>
           </div>
           
@@ -234,11 +234,11 @@ const Index = () => {
       <footer className="border-t py-4 bg-background">
         <div className="container flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center mb-4 md:mb-0">
-            <BrainCircuit className="h-5 w-5 text-suprbrain-primary mr-2" />
-            <span className="text-sm font-medium">SuprBrain</span>
+            <Link className="h-5 w-5 text-suprbrain-primary mr-2" />
+            <span className="text-sm font-medium">Collaber.ai</span>
           </div>
           <div className="text-sm text-gray-500">
-            © {new Date().getFullYear()} SuprBrain • Conversational Content Platform
+            © {new Date().getFullYear()} Collaber.ai • Conversational Content Platform
           </div>
         </div>
       </footer>

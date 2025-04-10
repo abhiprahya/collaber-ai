@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Folders, PlusCircle, Brain, FileImage, FileVideo, FileText, Mic, Zap, Share2, Users } from "lucide-react";
+import { Search, Folders, PlusCircle, Link, FileImage, FileVideo, FileText, Mic, Zap, Share2, Users } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -148,7 +148,7 @@ const ContentLibrary = () => {
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center h-64">
-                  <Brain className="h-16 w-16 text-muted-foreground mb-4" />
+                  <Link className="h-16 w-16 text-muted-foreground mb-4" />
                   <p className="text-muted-foreground">
                     {searchQuery 
                       ? "No content matches your search criteria." 
