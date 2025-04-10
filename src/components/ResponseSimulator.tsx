@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card } from "./ui/card";
 import { 
@@ -297,7 +296,6 @@ const ResponseSimulator: React.FC<ResponseSimulatorProps> = ({
                     <Progress 
                       value={reaction.sentiment} 
                       className="h-2"
-                      indicatorClassName={getProgressColor(reaction.sentiment)}
                     />
                   </div>
                   
@@ -309,7 +307,6 @@ const ResponseSimulator: React.FC<ResponseSimulatorProps> = ({
                     <Progress 
                       value={reaction.engagement} 
                       className="h-2"
-                      indicatorClassName={getProgressColor(reaction.engagement)}
                     />
                   </div>
                   
@@ -321,7 +318,6 @@ const ResponseSimulator: React.FC<ResponseSimulatorProps> = ({
                     <Progress 
                       value={reaction.sharing} 
                       className="h-2"
-                      indicatorClassName={getProgressColor(reaction.sharing)}
                     />
                   </div>
                   
@@ -333,7 +329,6 @@ const ResponseSimulator: React.FC<ResponseSimulatorProps> = ({
                     <Progress 
                       value={reaction.conversion} 
                       className="h-2"
-                      indicatorClassName={getProgressColor(reaction.conversion)}
                     />
                   </div>
                 </div>
