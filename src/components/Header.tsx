@@ -35,7 +35,7 @@ const Header = () => {
       toast({
         title: "No Persona Selected",
         description: "Please select a persona first before adding content.",
-        variant: "warning",
+        variant: "destructive", // Changed from "warning" to "destructive"
       });
     }
     setIsMultimodalOpen(true);
