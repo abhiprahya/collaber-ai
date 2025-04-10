@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
@@ -6,11 +5,12 @@ import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { FileImage, FileVideo, Mic, FileText, Upload, X, Plus, AlertCircle } from "lucide-react";
+import { FileImage, FileVideo, Mic, FileText, Upload, X, Plus, AlertCircle, Save } from "lucide-react";
 import { Card } from "./ui/card";
 import { Alert, AlertTitle, AlertDescription } from "./ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { PersonaProps } from "./PersonaCard";
+import { useNavigate } from "react-router-dom";
 
 interface MultimodalContentProps {
   isOpen: boolean;
@@ -26,6 +26,7 @@ const MultimodalContent: React.FC<MultimodalContentProps> = ({
   personaName = "Current Persona"
 }) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("text");
   const [textContent, setTextContent] = useState("");
   const [title, setTitle] = useState("");
@@ -78,7 +79,6 @@ const MultimodalContent: React.FC<MultimodalContentProps> = ({
       return;
     }
 
-    // Check for content based on active tab
     let hasContent = false;
     switch (activeTab) {
       case "text":
@@ -107,11 +107,8 @@ const MultimodalContent: React.FC<MultimodalContentProps> = ({
     setIsGenerating(true);
 
     try {
-      // Simulate API call to generate preview
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Fetch response from OpenAI-compatible API
-      // This is a simulation - in a real implementation, you would call an actual API
       const responseContent = await generatePersonaResponse(personaName, activeTab, textContent || title);
       
       setPreviewResponse(responseContent);
@@ -131,9 +128,52 @@ const MultimodalContent: React.FC<MultimodalContentProps> = ({
     }
   };
 
-  // Simulated API function - replace with actual API call in production
+  const saveToGallery = () => {
+    if (!personaId || !previewResponse) {
+      toast({
+        title: "Cannot Save Content",
+        description: "Please generate a preview first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const newContent = {
+        id: Date.now().toString(),
+        title: title || `${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Content`,
+        type: activeTab,
+        personaId,
+        personaName,
+        content: textContent,
+        preview: previewResponse,
+        createdAt: new Date().toISOString(),
+      };
+
+      const existingContent = JSON.parse(localStorage.getItem("contentGallery") || "[]");
+      
+      existingContent.push(newContent);
+      
+      localStorage.setItem("contentGallery", JSON.stringify(existingContent));
+      
+      toast({
+        title: "Content Saved",
+        description: "Your content has been saved to the gallery.",
+      });
+      
+      onClose();
+      navigate("/library");
+    } catch (error) {
+      console.error("Failed to save content:", error);
+      toast({
+        title: "Save Failed",
+        description: "Unable to save content at this time.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const generatePersonaResponse = async (persona: string, contentType: string, content: string) => {
-    // This simulates an API call - replace with actual API integration
     const contentTypesResponses: Record<string, string[]> = {
       text: [
         "I find this content very engaging and relevant to my interests. The writing style resonates with me, and I appreciate the clear explanations.",
@@ -157,15 +197,13 @@ const MultimodalContent: React.FC<MultimodalContentProps> = ({
       ]
     };
 
-    // Select random response based on content type and persona
     const responses = contentTypesResponses[contentType] || contentTypesResponses.text;
-    const seed = persona.length + content.length; // Simple deterministic seed
+    const seed = persona.length + content.length;
     const selectedResponse = responses[seed % responses.length];
     
-    // Add persona-specific sentiment
     return `As ${persona}, here's how I'd respond to your content:\n\n"${selectedResponse}"\n\nKey Takeaway: This content ${seed % 2 === 0 ? "strongly resonates" : "generally aligns"} with my interests and communication preferences.`;
   };
-  
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -244,7 +282,16 @@ const MultimodalContent: React.FC<MultimodalContentProps> = ({
                   {textContent.length} characters
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline">Save as Draft</Button>
+                  {previewResponse && (
+                    <Button 
+                      variant="secondary" 
+                      onClick={saveToGallery}
+                      className="gap-2"
+                    >
+                      <Save className="h-4 w-4" />
+                      Save to Gallery
+                    </Button>
+                  )}
                   <Button 
                     onClick={handlePreviewForPersona} 
                     disabled={isGenerating || !personaId}
@@ -304,7 +351,16 @@ const MultimodalContent: React.FC<MultimodalContentProps> = ({
               )}
               
               <div className="flex justify-end gap-2">
-                <Button variant="outline">Save as Draft</Button>
+                {previewResponse && (
+                  <Button 
+                    variant="secondary" 
+                    onClick={saveToGallery}
+                    className="gap-2"
+                  >
+                    <Save className="h-4 w-4" />
+                    Save to Gallery
+                  </Button>
+                )}
                 <Button 
                   onClick={handlePreviewForPersona} 
                   disabled={isGenerating || !personaId || imageFiles.length === 0}
@@ -363,7 +419,16 @@ const MultimodalContent: React.FC<MultimodalContentProps> = ({
               )}
               
               <div className="flex justify-end gap-2">
-                <Button variant="outline">Save as Draft</Button>
+                {previewResponse && (
+                  <Button 
+                    variant="secondary" 
+                    onClick={saveToGallery}
+                    className="gap-2"
+                  >
+                    <Save className="h-4 w-4" />
+                    Save to Gallery
+                  </Button>
+                )}
                 <Button 
                   onClick={handlePreviewForPersona} 
                   disabled={isGenerating || !personaId || videoFiles.length === 0}
@@ -427,7 +492,16 @@ const MultimodalContent: React.FC<MultimodalContentProps> = ({
               )}
               
               <div className="flex justify-end gap-2">
-                <Button variant="outline">Save as Draft</Button>
+                {previewResponse && (
+                  <Button 
+                    variant="secondary" 
+                    onClick={saveToGallery}
+                    className="gap-2"
+                  >
+                    <Save className="h-4 w-4" />
+                    Save to Gallery
+                  </Button>
+                )}
                 <Button 
                   onClick={handlePreviewForPersona} 
                   disabled={isGenerating || !personaId || audioFiles.length === 0}

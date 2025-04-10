@@ -1,64 +1,81 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Folders, FolderOpen, FileImage, FileVideo, FileText, PlusCircle, Brain } from "lucide-react";
+import { Search, Folders, PlusCircle, Brain, FileImage, FileVideo, FileText, Mic, Zap, Share2, Users } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import ContentAnalysisDialog from "@/components/ContentAnalysisDialog";
+import MultimodalContent from "@/components/MultimodalContent";
+
+interface ContentItem {
+  id: string;
+  title: string;
+  type: string;
+  personaId: string;
+  personaName: string;
+  content: string;
+  preview: string;
+  createdAt: string;
+}
 
 const ContentLibrary = () => {
-  const contentTypes = [
-    {
-      id: 1,
-      title: "Marketing Blog Post Template",
-      type: "text",
-      icon: <FileText className="h-10 w-10 text-blue-500" />,
-      tags: ["marketing", "blog", "template"],
-      lastEdited: "2 days ago",
-    },
-    {
-      id: 2,
-      title: "Product Launch Video Script",
-      type: "video",
-      icon: <FileVideo className="h-10 w-10 text-purple-500" />,
-      tags: ["product", "launch", "script"],
-      lastEdited: "1 week ago",
-    },
-    {
-      id: 3,
-      title: "Social Media Graphics Pack",
-      type: "image",
-      icon: <FileImage className="h-10 w-10 text-green-500" />,
-      tags: ["social media", "graphics", "visual"],
-      lastEdited: "3 days ago",
-    },
-    {
-      id: 4,
-      title: "Email Newsletter Template",
-      type: "text",
-      icon: <FileText className="h-10 w-10 text-blue-500" />,
-      tags: ["email", "newsletter", "template"],
-      lastEdited: "5 days ago",
-    },
-    {
-      id: 5,
-      title: "Customer Testimonial Video",
-      type: "video",
-      icon: <FileVideo className="h-10 w-10 text-purple-500" />,
-      tags: ["testimonial", "customer", "video"],
-      lastEdited: "2 weeks ago",
-    },
-    {
-      id: 6,
-      title: "Brand Style Guide",
-      type: "image",
-      icon: <FileImage className="h-10 w-10 text-green-500" />,
-      tags: ["brand", "style guide", "visual"],
-      lastEdited: "1 month ago",
-    },
-  ];
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedContent, setSelectedContent] = useState<ContentItem | null>(null);
+  const [isAnalysisOpen, setIsAnalysisOpen] = useState(false);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [savedContent, setSavedContent] = useState<ContentItem[]>([]);
+
+  // Load saved content from localStorage
+  useEffect(() => {
+    try {
+      const storedContent = localStorage.getItem("contentGallery");
+      if (storedContent) {
+        setSavedContent(JSON.parse(storedContent));
+      }
+    } catch (error) {
+      console.error("Error loading content from localStorage:", error);
+    }
+  }, []);
+
+  // Get icon based on content type
+  const getContentIcon = (type: string) => {
+    switch (type) {
+      case "text":
+        return <FileText className="h-10 w-10 text-blue-500" />;
+      case "image":
+        return <FileImage className="h-10 w-10 text-green-500" />;
+      case "video":
+        return <FileVideo className="h-10 w-10 text-purple-500" />;
+      case "audio":
+        return <Mic className="h-10 w-10 text-orange-500" />;
+      default:
+        return <FileText className="h-10 w-10 text-blue-500" />;
+    }
+  };
+
+  // Filter content based on search query and tab
+  const filterContent = (type: string | null) => {
+    return savedContent.filter(item => {
+      const matchesSearch = searchQuery 
+        ? item.title.toLowerCase().includes(searchQuery.toLowerCase()) 
+        : true;
+      
+      const matchesType = type && type !== "all" 
+        ? item.type === type 
+        : true;
+      
+      return matchesSearch && matchesType;
+    });
+  };
+
+  // Open content analysis dialog
+  const handleContentClick = (content: ContentItem) => {
+    setSelectedContent(content);
+    setIsAnalysisOpen(true);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -73,9 +90,11 @@ const ContentLibrary = () => {
                 type="search"
                 placeholder="Search content..."
                 className="w-[250px] pl-8"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <Button>
+            <Button onClick={() => setIsCreateOpen(true)}>
               <PlusCircle className="mr-2 h-4 w-4" />
               New Content
             </Button>
@@ -86,122 +105,83 @@ const ContentLibrary = () => {
           <TabsList>
             <TabsTrigger value="all">All Content</TabsTrigger>
             <TabsTrigger value="text">Text</TabsTrigger>
-            <TabsTrigger value="images">Images</TabsTrigger>
-            <TabsTrigger value="videos">Videos</TabsTrigger>
+            <TabsTrigger value="image">Images</TabsTrigger>
+            <TabsTrigger value="video">Videos</TabsTrigger>
             <TabsTrigger value="audio">Audio</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="all" className="mt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {contentTypes.map((content) => (
-                <Card key={content.id} className="hover:shadow-md transition-shadow cursor-pointer">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-lg font-medium">{content.title}</CardTitle>
-                    {content.icon}
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {content.tags.map((tag, i) => (
-                        <Badge key={i} variant="outline">{tag}</Badge>
-                      ))}
-                    </div>
-                  </CardContent>
-                  <CardFooter className="text-xs text-muted-foreground">
-                    Last edited {content.lastEdited}
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="text" className="mt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {contentTypes
-                .filter((content) => content.type === "text")
-                .map((content) => (
-                  <Card key={content.id} className="hover:shadow-md transition-shadow cursor-pointer">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-lg font-medium">{content.title}</CardTitle>
-                      {content.icon}
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {content.tags.map((tag, i) => (
-                          <Badge key={i} variant="outline">{tag}</Badge>
-                        ))}
-                      </div>
-                    </CardContent>
-                    <CardFooter className="text-xs text-muted-foreground">
-                      Last edited {content.lastEdited}
-                    </CardFooter>
-                  </Card>
-                ))}
-            </div>
-          </TabsContent>
-          
-          {/* Similar TabsContent blocks for images, videos, and audio */}
-          <TabsContent value="images" className="mt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {contentTypes
-                .filter((content) => content.type === "image")
-                .map((content) => (
-                  <Card key={content.id} className="hover:shadow-md transition-shadow cursor-pointer">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-lg font-medium">{content.title}</CardTitle>
-                      {content.icon}
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {content.tags.map((tag, i) => (
-                          <Badge key={i} variant="outline">{tag}</Badge>
-                        ))}
-                      </div>
-                    </CardContent>
-                    <CardFooter className="text-xs text-muted-foreground">
-                      Last edited {content.lastEdited}
-                    </CardFooter>
-                  </Card>
-                ))}
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="videos" className="mt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {contentTypes
-                .filter((content) => content.type === "video")
-                .map((content) => (
-                  <Card key={content.id} className="hover:shadow-md transition-shadow cursor-pointer">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-lg font-medium">{content.title}</CardTitle>
-                      {content.icon}
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {content.tags.map((tag, i) => (
-                          <Badge key={i} variant="outline">{tag}</Badge>
-                        ))}
-                      </div>
-                    </CardContent>
-                    <CardFooter className="text-xs text-muted-foreground">
-                      Last edited {content.lastEdited}
-                    </CardFooter>
-                  </Card>
-                ))}
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="audio" className="mt-6">
-            <div className="flex flex-col items-center justify-center h-64">
-              <Brain className="h-16 w-16 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">No audio content found. Create your first audio content.</p>
-              <Button className="mt-4">
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Create Audio Content
-              </Button>
-            </div>
-          </TabsContent>
+          {["all", "text", "image", "video", "audio"].map((tab) => (
+            <TabsContent key={tab} value={tab} className="mt-6">
+              {filterContent(tab === "all" ? null : tab).length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filterContent(tab === "all" ? null : tab).map((content) => (
+                    <Card 
+                      key={content.id} 
+                      className="hover:shadow-md transition-shadow cursor-pointer"
+                      onClick={() => handleContentClick(content)}
+                    >
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-lg font-medium truncate">{content.title}</CardTitle>
+                        {getContentIcon(content.type)}
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-sm text-muted-foreground mt-1 mb-2 truncate">
+                          For persona: {content.personaName}
+                        </div>
+                        <div className="flex gap-2 mt-3">
+                          <Button variant="ghost" size="icon" className="h-8 w-8" title="Improve with AI">
+                            <Zap className="h-4 w-4 text-amber-500" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8" title="Share">
+                            <Share2 className="h-4 w-4 text-blue-500" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8" title="Collaborate">
+                            <Users className="h-4 w-4 text-purple-500" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                      <CardFooter className="text-xs text-muted-foreground">
+                        Created {new Date(content.createdAt).toLocaleDateString()}
+                      </CardFooter>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-64">
+                  <Brain className="h-16 w-16 text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground">
+                    {searchQuery 
+                      ? "No content matches your search criteria." 
+                      : `No ${tab === "all" ? "" : tab} content found. Create your first content.`}
+                  </p>
+                  <Button className="mt-4" onClick={() => setIsCreateOpen(true)}>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Create Content
+                  </Button>
+                </div>
+              )}
+            </TabsContent>
+          ))}
         </Tabs>
       </main>
+
+      {isAnalysisOpen && selectedContent && (
+        <ContentAnalysisDialog
+          isOpen={isAnalysisOpen}
+          onClose={() => {
+            setIsAnalysisOpen(false);
+            setSelectedContent(null);
+          }}
+          content={selectedContent}
+        />
+      )}
+
+      <MultimodalContent
+        isOpen={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+        personaId={localStorage.getItem("selectedPersona") ? JSON.parse(localStorage.getItem("selectedPersona")!).id : undefined}
+        personaName={localStorage.getItem("selectedPersona") ? JSON.parse(localStorage.getItem("selectedPersona")!).name : undefined}
+      />
     </div>
   );
 };
