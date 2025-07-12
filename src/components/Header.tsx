@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Link, Share2 } from "lucide-react";
+import { Link, Share2, Menu } from "lucide-react";
 import { Button } from "./ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
